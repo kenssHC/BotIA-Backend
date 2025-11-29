@@ -119,6 +119,45 @@ Después de ejecutar el seed:
 | admin | admin@kiamami.com | admin123 | ADMIN |
 | usuario | usuario@kiamami.com | admin123 | USER |
 
+## 📥 Ingesta de Datos Excel
+
+### Preparación
+
+1. Coloca los archivos Excel en `data/raw/`:
+   - `google_ads.xlsx` (o cualquier nombre con "google")
+   - `meta_ads.xlsx` (o "facebook", "meta")
+   - `tiktok_ads.xlsx` (o "tiktok")
+
+2. Asegúrate de que tengan columnas como:
+   - `campaign_id` o `id`
+   - `campaign_name` o `name`
+   - `date` o `fecha`
+   - `impressions`, `clicks`, `spend`, `conversions`
+
+### Comandos de ingesta
+
+```bash
+# Ingestar todos los archivos
+npm run ingest:all
+
+# Ingestar por plataforma
+npm run ingest:google
+npm run ingest:meta
+npm run ingest:tiktok
+```
+
+### Endpoints de ingesta (API)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | `/api/ingest/all` | Ingestar todos los archivos |
+| POST | `/api/ingest/google` | Ingestar Google Ads |
+| POST | `/api/ingest/meta` | Ingestar Meta Ads |
+| POST | `/api/ingest/tiktok` | Ingestar TikTok Ads |
+| GET | `/api/ingest/stats` | Ver estadísticas de datos cargados |
+
+---
+
 ## 🛠️ Comandos Útiles
 
 ```bash
