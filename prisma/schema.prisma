@@ -1,0 +1,189 @@
+// ===========================================
+// PRISMA SCHEMA - KIA MIAMI BACKEND
+// ===========================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// MODELOS DE AUTENTICACIÓN
+// ===========================================
+
+model User {
+  id                     String    @id @default(uuid())
+  username               String    @unique
+  email                  String    @unique
+  password               String
+  firstName              String?
+  lastName               String?
+  role                   Role      @default(USER)
+  isActive               Boolean   @default(true)
+  requiresPasswordChange Boolean   @default(true)
+  tenantId               String
+  
+  // Relaciones
+  tenant                 Tenant    @relation(fields: [tenantId], references: [id])
+  reports                Report[]
+  passwordResets         PasswordReset[]
+  
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([email])
+  @@map("users")
+}
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique  // ej: "richarq"
+  isActive    Boolean  @default(true)
+  
+  // Relaciones
+  users       User[]
+  campaigns   Campaign[]
+  reports     Report[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tenants")
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@map("password_resets")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+// ===========================================
+// MODELOS DE CAMPAÑAS (Google/Meta/TikTok)
+// ===========================================
+
+model Campaign {
+  id           String        @id @default(uuid())
+  externalId   String        // ID de Google/Meta/TikTok
+  name         String
+  platform     Platform
+  status       String        @default("ACTIVE")
+  tenantId     String
+  
+  // Relaciones
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  metrics      CampaignMetric[]
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([externalId, platform])
+  @@index([tenantId])
+  @@index([platform])
+  @@map("campaigns")
+}
+
+model CampaignMetric {
+  id           String   @id @default(uuid())
+  campaignId   String
+  date         DateTime @db.Date
+  impressions  Int      @default(0)
+  clicks       Int      @default(0)
+  spend        Decimal  @db.Decimal(10, 2)
+  conversions  Int      @default(0)
+  cpc          Decimal? @db.Decimal(10, 4)
+  cpm          Decimal? @db.Decimal(10, 4)
+  ctr          Decimal? @db.Decimal(5, 4)
+  
+  // Relación
+  campaign     Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+
+  @@unique([campaignId, date])
+  @@index([date])
+  @@map("campaign_metrics")
+}
+
+enum Platform {
+  GOOGLE_ADS
+  META_ADS
+  TIKTOK_ADS
+}
+
+// ===========================================
+// MODELOS DE REPORTES
+// ===========================================
+
+model Report {
+  id               String   @id @default(uuid())
+  name             String
+  instruction      String   @db.Text
+  frequency        Frequency
+  frequencyDetails Json?
+  time             String   // "09:00"
+  isActive         Boolean  @default(true)
+  recipients       String[] @default([])
+  
+  userId           String
+  tenantId         String
+  
+  // Relaciones
+  user             User     @relation(fields: [userId], references: [id])
+  tenant           Tenant   @relation(fields: [tenantId], references: [id])
+  executions       ReportExecution[]
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("reports")
+}
+
+model ReportExecution {
+  id         String   @id @default(uuid())
+  reportId   String
+  status     ExecutionStatus @default(PENDING)
+  result     Json?
+  error      String?
+  
+  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  executedAt DateTime @default(now())
+
+  @@index([reportId])
+  @@map("report_executions")
+}
+
+enum Frequency {
+  daily
+  weekly
+  monthly
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
