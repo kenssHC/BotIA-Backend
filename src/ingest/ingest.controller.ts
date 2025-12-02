@@ -7,7 +7,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { IngestService } from './ingest.service';
+import { IngestService, IngestResult } from './ingest.service';
 
 @Controller('ingest')
 export class IngestController {

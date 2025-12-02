@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as iconv from 'iconv-lite';
 
 // Tipos para el mapeo de columnas
-interface ColumnMapping {
+export interface ColumnMapping {
   campaignId: number | null;
   campaignName: number | null;
   date: number | null;
@@ -27,7 +27,7 @@ interface ColumnMapping {
   budget: number | null;
 }
 
-interface ParsedRow {
+export interface ParsedRow {
   externalId: string;
   name: string;
   date: Date;
@@ -40,7 +40,7 @@ interface ParsedRow {
   ctr: number | null;
 }
 
-interface IngestResult {
+export interface IngestResult {
   platform: string;
   fileName: string;
   totalRows: number;

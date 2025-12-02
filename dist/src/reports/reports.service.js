@@ -8,13 +8,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ReportsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReportsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-let ReportsService = class ReportsService {
-    constructor(prisma) {
+const llm_service_1 = require("../llm/llm.service");
+let ReportsService = ReportsService_1 = class ReportsService {
+    constructor(prisma, llmService) {
         this.prisma = prisma;
+        this.llmService = llmService;
+        this.logger = new common_1.Logger(ReportsService_1.name);
     }
     async findAllByTenant(tenantId, limit = 100, offset = 0) {
         return this.prisma.report.findMany({
@@ -91,6 +95,7 @@ let ReportsService = class ReportsService {
     }
     async executeReport(id, tenantId) {
         const report = await this.findById(id, tenantId);
+        this.logger.log(`Ejecutando reporte: ${report.name} (ID: ${id})`);
         const execution = await this.prisma.reportExecution.create({
             data: {
                 reportId: id,
@@ -98,30 +103,27 @@ let ReportsService = class ReportsService {
             },
         });
         try {
-            const mockAnalysis = {
-                summary: `Análisis del reporte "${report.name}"`,
-                instruction: report.instruction,
-                generatedAt: new Date().toISOString(),
-                insights: [
-                    'Este es un análisis de demostración',
-                    'La integración con LLM se implementará próximamente',
-                    'Los datos de campañas se procesarán automáticamente',
-                ],
-            };
+            const llmResult = await this.llmService.generateReportAnalysis(report.instruction, tenantId);
             await this.prisma.reportExecution.update({
                 where: { id: execution.id },
                 data: {
                     status: 'COMPLETED',
-                    result: mockAnalysis,
+                    result: llmResult,
                 },
             });
+            this.logger.log(`Reporte ejecutado exitosamente: ${report.name}`);
             return {
                 executionId: execution.id,
-                llmAnalysis: mockAnalysis,
-                message: 'Reporte ejecutado exitosamente (modo demo)',
+                llmAnalysis: llmResult.analysis,
+                message: llmResult.isDemo
+                    ? 'Reporte ejecutado en modo demo (configura OPENAI_API_KEY para análisis real)'
+                    : 'Reporte ejecutado exitosamente con análisis de IA',
+                dataContext: llmResult.dataContext,
+                generatedAt: llmResult.generatedAt,
             };
         }
         catch (error) {
+            this.logger.error(`Error ejecutando reporte ${id}:`, error);
             await this.prisma.reportExecution.update({
                 where: { id: execution.id },
                 data: {
@@ -134,8 +136,9 @@ let ReportsService = class ReportsService {
     }
 };
 exports.ReportsService = ReportsService;
-exports.ReportsService = ReportsService = __decorate([
+exports.ReportsService = ReportsService = ReportsService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        llm_service_1.LlmService])
 ], ReportsService);
 //# sourceMappingURL=reports.service.js.map

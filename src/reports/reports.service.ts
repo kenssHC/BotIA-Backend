@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { LlmService } from '../llm/llm.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { Frequency } from '@prisma/client';
 
 @Injectable()
 export class ReportsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ReportsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private llmService: LlmService,
+  ) {}
 
   async findAllByTenant(tenantId: string, limit = 100, offset = 0) {
     return this.prisma.report.findMany({
@@ -92,8 +98,13 @@ export class ReportsService {
     });
   }
 
+  /**
+   * Ejecuta un reporte usando el LLM para generar análisis
+   */
   async executeReport(id: string, tenantId: string) {
     const report = await this.findById(id, tenantId);
+
+    this.logger.log(`Ejecutando reporte: ${report.name} (ID: ${id})`);
 
     // Crear registro de ejecución
     const execution = await this.prisma.reportExecution.create({
@@ -104,35 +115,35 @@ export class ReportsService {
     });
 
     try {
-      // TODO: Aquí irá la lógica real de ejecución con LLM
-      // Por ahora, simulamos una ejecución exitosa
-      
-      const mockAnalysis = {
-        summary: `Análisis del reporte "${report.name}"`,
-        instruction: report.instruction,
-        generatedAt: new Date().toISOString(),
-        insights: [
-          'Este es un análisis de demostración',
-          'La integración con LLM se implementará próximamente',
-          'Los datos de campañas se procesarán automáticamente',
-        ],
-      };
+      // Usar el LlmService para generar análisis real
+      const llmResult = await this.llmService.generateReportAnalysis(
+        report.instruction,
+        tenantId,
+      );
 
       // Actualizar ejecución como completada
       await this.prisma.reportExecution.update({
         where: { id: execution.id },
         data: {
           status: 'COMPLETED',
-          result: mockAnalysis,
+          result: llmResult,
         },
       });
 
+      this.logger.log(`Reporte ejecutado exitosamente: ${report.name}`);
+
       return {
         executionId: execution.id,
-        llmAnalysis: mockAnalysis,
-        message: 'Reporte ejecutado exitosamente (modo demo)',
+        llmAnalysis: llmResult.analysis,
+        message: llmResult.isDemo 
+          ? 'Reporte ejecutado en modo demo (configura OPENAI_API_KEY para análisis real)'
+          : 'Reporte ejecutado exitosamente con análisis de IA',
+        dataContext: llmResult.dataContext,
+        generatedAt: llmResult.generatedAt,
       };
     } catch (error) {
+      this.logger.error(`Error ejecutando reporte ${id}:`, error);
+
       // Actualizar ejecución como fallida
       await this.prisma.reportExecution.update({
         where: { id: execution.id },
@@ -146,4 +157,3 @@ export class ReportsService {
     }
   }
 }
-

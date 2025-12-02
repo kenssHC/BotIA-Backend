@@ -10,11 +10,13 @@ exports.ReportsModule = void 0;
 const common_1 = require("@nestjs/common");
 const reports_controller_1 = require("./reports.controller");
 const reports_service_1 = require("./reports.service");
+const llm_module_1 = require("../llm/llm.module");
 let ReportsModule = class ReportsModule {
 };
 exports.ReportsModule = ReportsModule;
 exports.ReportsModule = ReportsModule = __decorate([
     (0, common_1.Module)({
+        imports: [llm_module_1.LlmModule],
         controllers: [reports_controller_1.ReportsController],
         providers: [reports_service_1.ReportsService],
         exports: [reports_service_1.ReportsService],

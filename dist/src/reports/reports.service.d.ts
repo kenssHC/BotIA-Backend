@@ -1,9 +1,12 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { LlmService } from '../llm/llm.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 export declare class ReportsService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private llmService;
+    private readonly logger;
+    constructor(prisma: PrismaService, llmService: LlmService);
     findAllByTenant(tenantId: string, limit?: number, offset?: number): Promise<({
         user: {
             id: string;
@@ -34,8 +37,8 @@ export declare class ReportsService {
             error: string | null;
             id: string;
             result: import("@prisma/client/runtime/library").JsonValue | null;
-            executedAt: Date;
             status: import(".prisma/client").$Enums.ExecutionStatus;
+            executedAt: Date;
             reportId: string;
         }[];
     } & {
@@ -96,12 +99,9 @@ export declare class ReportsService {
     }>;
     executeReport(id: string, tenantId: string): Promise<{
         executionId: string;
-        llmAnalysis: {
-            summary: string;
-            instruction: string;
-            generatedAt: string;
-            insights: string[];
-        };
+        llmAnalysis: any;
         message: string;
+        dataContext: any;
+        generatedAt: any;
     }>;
 }

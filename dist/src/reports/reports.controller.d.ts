@@ -39,8 +39,8 @@ export declare class ReportsController {
                 error: string | null;
                 id: string;
                 result: import("@prisma/client/runtime/library").JsonValue | null;
-                executedAt: Date;
                 status: import(".prisma/client").$Enums.ExecutionStatus;
+                executedAt: Date;
                 reportId: string;
             }[];
         } & {
@@ -103,13 +103,10 @@ export declare class ReportsController {
         message: string;
         data: {
             executionId: string;
-            llmAnalysis: {
-                summary: string;
-                instruction: string;
-                generatedAt: string;
-                insights: string[];
-            };
+            llmAnalysis: any;
             message: string;
+            dataContext: any;
+            generatedAt: any;
         };
     }>;
     executeWithCharts(id: string, req: any): Promise<{
@@ -117,13 +114,10 @@ export declare class ReportsController {
         message: string;
         data: {
             executionId: string;
-            llmAnalysis: {
-                summary: string;
-                instruction: string;
-                generatedAt: string;
-                insights: string[];
-            };
+            llmAnalysis: any;
             message: string;
+            dataContext: any;
+            generatedAt: any;
         };
     }>;
     execute(id: string, req: any): Promise<{
@@ -131,13 +125,10 @@ export declare class ReportsController {
         message: string;
         data: {
             executionId: string;
-            llmAnalysis: {
-                summary: string;
-                instruction: string;
-                generatedAt: string;
-                insights: string[];
-            };
+            llmAnalysis: any;
             message: string;
+            dataContext: any;
+            generatedAt: any;
         };
     }>;
 }
