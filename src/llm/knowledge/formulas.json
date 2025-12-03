@@ -1,0 +1,161 @@
+{
+  "categories": [
+    {
+      "id": "volumen_conversiones",
+      "name": "Volumen de Conversiones & Tendencias",
+      "formulas": [
+        {
+          "id": "promedio_conv_dia",
+          "question": "¿Cuál es el número promedio de conversiones o leads por día de las campañas de [Product] durante este mes en Meta, Google y TikTok?",
+          "formula": "Promedio_conv_día = (Σ conversiones_[Product] en Meta, Google, TikTok) / días_del_periodo",
+          "requiredColumns": ["conversiones", "fecha", "plataforma", "product"]
+        },
+        {
+          "id": "cpa_promedio",
+          "question": "¿Cuál es el rendimiento promedio del costo por resultado para [Product] durante este mes en Meta, Google y TikTok?",
+          "formula": "CPA_promedio = (Σ inversión_[Product] Meta+Google+TikTok) / (Σ conversiones_[Product] Meta+Google+TikTok)",
+          "requiredColumns": ["inversión", "conversiones", "plataforma", "product"]
+        },
+        {
+          "id": "porcentaje_inversion_whatsapp",
+          "question": "¿Qué porcentaje del total de la inversión en medios representan las campañas de [WhatsApp]?",
+          "formula": "%_inversión_WhatsApp_sobre_total = (inversión_campañas_WhatsApp) / (inversión_total_Meta+Google+TikTok)",
+          "requiredColumns": ["inversión", "campaign", "plataforma"]
+        },
+        {
+          "id": "conversiones_mes_pasado",
+          "question": "¿Cuántas conversiones/leads/ventas generó [Campaign] el mes pasado en campañas digitales en todas las plataformas?",
+          "formula": "Conversiones_[Campaign]_mes_pasado = Σ conversiones_[Campaign] en Meta, Google, TikTok durante el mes pasado",
+          "requiredColumns": ["conversiones", "campaign", "fecha", "plataforma"]
+        },
+        {
+          "id": "tendencia_diaria",
+          "question": "¿Cuál es la tendencia diaria de conversiones para [Product] este mes y está aumentando o disminuyendo semana a semana?",
+          "formula": "Tasa_crecimiento_WoW = (Prom_día_semana_actual – Prom_día_semana_anterior) / Prom_día_semana_anterior",
+          "requiredColumns": ["conversiones", "fecha", "product"]
+        },
+        {
+          "id": "comparacion_mes",
+          "question": "¿Cuál es el volumen de conversiones para [Product] comparado con el mes pasado?",
+          "formula": "Conv_actual_corte = Σ conversiones_[Product] del día 1 al día N del mes actual; Conv_pasado_corte = Σ conversiones_[Product] del día 1 al día N del mes pasado",
+          "requiredColumns": ["conversiones", "fecha", "product"]
+        },
+        {
+          "id": "plataforma_mayor_conversiones",
+          "question": "¿Qué plataforma publicitaria (Google, Facebook o TikTok) entregó la mayor cantidad de conversiones para [Product] este mes y en qué porcentaje?",
+          "formula": "%_Facebook = Conv_Facebook / Conv_total; %_Google = Conv_Google / Conv_total; %_Tiktok = Conv_Tiktok / Conv_total",
+          "requiredColumns": ["conversiones", "plataforma", "product"]
+        },
+        {
+          "id": "conversiones_por_semana",
+          "question": "¿Cuántas conversiones generó [Campaign] por semana durante las últimas 2, 4, 6, 8 semanas?",
+          "formula": "Últimas N semanas: Σ Conv_semana_(t a t-(N-1))",
+          "requiredColumns": ["conversiones", "fecha", "campaign"]
+        },
+        {
+          "id": "contribucion_campanas",
+          "question": "¿Qué campañas contribuyeron en mayor proporción al total de conversiones este mes?",
+          "formula": "%contribución_[Campaign] = conversiones_[Campaign]_mes / conversiones_totales_mes",
+          "requiredColumns": ["conversiones", "campaign", "fecha"]
+        },
+        {
+          "id": "distribucion_por_plataforma",
+          "question": "¿Cuál es la distribución promedio de conversiones por plataforma (Meta/Google/TikTok) para [Category]?",
+          "formula": "Conv_total_[Category] = Conv_Meta + Conv_Google + Conv_Tiktok",
+          "requiredColumns": ["conversiones", "plataforma", "category"]
+        }
+      ]
+    },
+    {
+      "id": "eficiencia_costos",
+      "name": "Eficiencia de Costos & CPA/ROAS",
+      "formulas": [
+        {
+          "id": "cpa_promedio_todas",
+          "question": "¿Cuál es el costo por resultado (CPA) promedio para [Product] este mes en todas las plataformas?",
+          "formula": "CPA_promedio_[Product] = inversión_total_[Product]_todas_plataformas / conversiones_totales_[Product]_todas_plataformas",
+          "requiredColumns": ["inversión", "conversiones", "product"]
+        },
+        {
+          "id": "cpa_por_plataforma",
+          "question": "¿Qué plataforma entregó el CPA más bajo para [Product] y cómo se compara con el CPA más alto?",
+          "formula": "CPA_plataforma = inversión_[Product]_plataforma / conversiones_[Product]_plataforma; CPA_mín = MIN(...); CPA_máx = MAX(...)",
+          "requiredColumns": ["inversión", "conversiones", "plataforma", "product"]
+        },
+        {
+          "id": "variacion_cpa",
+          "question": "¿Cuánto ha aumentado o disminuido el CPA de [Campaign] en comparación con el mes pasado?",
+          "formula": "Dif_abs = CPA_actual – CPA_anterior; Dif_rel = (CPA_actual / CPA_anterior) – 1",
+          "requiredColumns": ["inversión", "conversiones", "campaign", "fecha"]
+        },
+        {
+          "id": "roas_total",
+          "question": "¿Cuál es el retorno total de la inversión publicitaria (ROAS) para [Product] en Meta, Google y TikTok?",
+          "formula": "ROAS_[Product] = ingresos_atribuidos_[Product]_todas_plataformas / inversión_total_[Product]_todas_plataformas",
+          "requiredColumns": ["ingresos", "inversión", "product"]
+        },
+        {
+          "id": "plataforma_eficiente",
+          "question": "¿Qué plataforma está generando las conversiones más eficientes en costos para [Category]?",
+          "formula": "CPA_plataforma_[Category] = inversión_[Category]_plataforma / conversiones_[Category]_plataforma",
+          "requiredColumns": ["inversión", "conversiones", "plataforma", "category"]
+        },
+        {
+          "id": "gasto_bajo_objetivo",
+          "question": "¿Qué porcentaje del gasto total resultó en conversiones por debajo del CPA objetivo?",
+          "formula": "%_gasto_bajo_objetivo = Gasto_bajo_objetivo / Gasto_total",
+          "requiredColumns": ["inversión", "conversiones", "objetivo_CPA"]
+        },
+        {
+          "id": "campanas_sin_conversiones",
+          "question": "¿Qué campañas están gastando pero no convierten (gasto > X y 0 conversiones)?",
+          "formula": "Filtrar donde: inversión_campaña > X AND conversiones_campaña = 0",
+          "requiredColumns": ["inversión", "conversiones", "campaign"]
+        }
+      ]
+    },
+    {
+      "id": "participacion_resultados",
+      "name": "Participación de Resultados & Análisis de Contribución",
+      "formulas": [
+        {
+          "id": "participacion_whatsapp",
+          "question": "¿Qué porcentaje del total de conversiones de este mes fue generado por campañas de WhatsApp?",
+          "formula": "%_conv_WhatsApp = Conv_WhatsApp / Conv_total",
+          "requiredColumns": ["conversiones", "campaign"]
+        },
+        {
+          "id": "participacion_inversion",
+          "question": "¿Qué porcentaje de la inversión total en medios corresponde a [Campaign] este mes?",
+          "formula": "%inversión_[Campaign] = inversión_[Campaign]_mes / inversión_total_todas_campañas_mes",
+          "requiredColumns": ["inversión", "campaign"]
+        },
+        {
+          "id": "segmento_mayor_participacion",
+          "question": "¿Qué segmento de audiencia representó la mayor participación de conversiones para [Product]?",
+          "formula": "%conv_segmento = conversiones_[Product]_segmento / conversiones_totales_[Product]",
+          "requiredColumns": ["conversiones", "segmento_audiencia", "product"]
+        },
+        {
+          "id": "remarketing_vs_prospecting",
+          "question": "¿Qué porcentaje del total de conversiones provino de remarketing vs prospecting?",
+          "formula": "%_remarketing = Conv_remarketing / Conv_total; %_prospecting = Conv_prospecting / Conv_total",
+          "requiredColumns": ["conversiones", "tipo_estrategia"]
+        },
+        {
+          "id": "mobile_vs_desktop",
+          "question": "¿Qué porcentaje de conversiones provino de mobile vs desktop?",
+          "formula": "%_mobile = Conv_mobile / Conv_total; %_desktop = Conv_desktop / Conv_total",
+          "requiredColumns": ["conversiones", "dispositivo"]
+        },
+        {
+          "id": "video_vs_estatico",
+          "question": "¿Qué participación de conversiones se atribuyó a formatos de video vs formatos estáticos?",
+          "formula": "%_video = Conv_video / Conv_total; %_estático = Conv_estático / Conv_total",
+          "requiredColumns": ["conversiones", "formato"]
+        }
+      ]
+    }
+  ]
+}
+

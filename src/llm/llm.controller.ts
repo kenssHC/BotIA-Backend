@@ -24,21 +24,36 @@ export class LlmController {
    */
   @Get('status')
   async getStatus() {
+    const knowledgeStats = this.llmService.getKnowledgeStats();
+    
     return {
       success: true,
       data: {
         configured: this.llmService.isConfigured(),
         provider: 'OpenAI',
         message: this.llmService.isConfigured()
-          ? 'LLM configurado y listo'
+          ? 'LLM configurado y listo con conocimiento especializado'
           : 'LLM en modo demo (configura OPENAI_API_KEY)',
+        knowledge: knowledgeStats,
       },
     };
   }
 
   /**
+   * GET /api/llm/knowledge
+   * Obtiene estadísticas del conocimiento cargado
+   */
+  @Get('knowledge')
+  async getKnowledge() {
+    return {
+      success: true,
+      data: this.llmService.getKnowledgeStats(),
+    };
+  }
+
+  /**
    * POST /api/llm/analyze
-   * Analiza datos de campañas con IA
+   * Analiza datos de campañas con IA (usa fórmulas y prompts especializados)
    */
   @Post('analyze')
   @HttpCode(HttpStatus.OK)
@@ -57,7 +72,7 @@ export class LlmController {
 
   /**
    * POST /api/llm/query
-   * Procesa consulta en lenguaje natural
+   * Procesa consulta en lenguaje natural (detecta fórmulas relevantes)
    */
   @Post('query')
   @HttpCode(HttpStatus.OK)
@@ -76,7 +91,7 @@ export class LlmController {
 
   /**
    * POST /api/llm/generate-report
-   * Genera análisis para un reporte
+   * Genera análisis para un reporte (usa template de reporte ejecutivo)
    */
   @Post('generate-report')
   @HttpCode(HttpStatus.OK)
@@ -96,4 +111,3 @@ export class LlmController {
     };
   }
 }
-
