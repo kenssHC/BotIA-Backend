@@ -118,6 +118,24 @@ export class IngestService {
   constructor(private prisma: PrismaService) {}
 
   /**
+   * Construir un externalId único combinando nombre + índice de fila
+   * El índice de fila SIEMPRE se incluye para garantizar unicidad absoluta
+   */
+  private buildExternalId(
+    campaignName: string,
+    rowIndex: number
+  ): string {
+    // Combinar nombre de campaña con índice de fila para unicidad garantizada
+    const combined = `${campaignName}_row${rowIndex}`;
+
+    // Normalizar y limitar a 255 caracteres
+    return combined
+      .replace(/[^a-zA-Z0-9_.]/g, '_')
+      .replace(/__+/g, '_') // Eliminar underscores múltiples
+      .substring(0, 255);
+  }
+
+  /**
    * Normalizar texto: quitar tildes, minúsculas, sin espacios ni caracteres especiales
    */
   private normalizeText(text: string): string {
@@ -327,7 +345,7 @@ export class IngestService {
     
     for (let i = 3; i < lines.length; i++) {
       const rowData = lines[i];
-      
+
       try {
         const getCellValue = (colNum: number | null): string => {
           if (colNum === null || colNum >= rowData.length) return '';
@@ -335,24 +353,28 @@ export class IngestService {
         };
 
         const campaignName = getCellValue(mapping.campaignName)?.trim();
-        
+
         // Saltar filas sin nombre, totales, o vacías
-        if (!campaignName || 
-            campaignName === '' || 
+        if (!campaignName ||
+            campaignName === '' ||
             campaignName === '--' ||
             campaignName.toLowerCase().includes('total')) {
           continue;
         }
 
-        const externalId = campaignName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
+        // Crear ID único usando nombre + índice de fila
+        const externalId = this.buildExternalId(campaignName, i);
+
+        const spend = this.parseNumber(getCellValue(mapping.spend));
+        const impressions = this.parseNumber(getCellValue(mapping.impressions));
 
         const parsedRow: ParsedRow = {
           externalId,
           name: campaignName,
           date: defaultDate || new Date(),
-          impressions: this.parseNumber(getCellValue(mapping.impressions)),
+          impressions,
           clicks: this.parseNumber(getCellValue(mapping.clicks)),
-          spend: this.parseNumber(getCellValue(mapping.spend)),
+          spend,
           conversions: this.parseNumber(getCellValue(mapping.conversions)),
           cpc: this.parseNumberOrNull(getCellValue(mapping.cpc)),
           cpm: this.parseNumberOrNull(getCellValue(mapping.cpm)),
@@ -397,7 +419,7 @@ export class IngestService {
     
     for (let i = 1; i < lines.length; i++) {
       const rowData = lines[i];
-      
+
       try {
         const getCellValue = (colNum: number | null): string => {
           if (colNum === null || colNum >= rowData.length) return '';
@@ -409,7 +431,11 @@ export class IngestService {
           continue;
         }
 
-        const externalId = campaignName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
+        // Crear ID único usando nombre + índice de fila
+        const externalId = this.buildExternalId(campaignName, i);
+
+        const spend = this.parseNumber(getCellValue(mapping.spend));
+        const impressions = this.parseNumber(getCellValue(mapping.impressions));
 
         let date: Date;
         if (platform === Platform.META_ADS && mapping.dateStart !== null) {
@@ -427,9 +453,9 @@ export class IngestService {
           externalId,
           name: campaignName,
           date,
-          impressions: this.parseNumber(getCellValue(mapping.impressions)),
+          impressions,
           clicks: this.parseNumber(getCellValue(mapping.clicks)),
-          spend: this.parseNumber(getCellValue(mapping.spend)),
+          spend,
           conversions,
           cpc: this.parseNumberOrNull(getCellValue(mapping.cpc)),
           cpm: this.parseNumberOrNull(getCellValue(mapping.cpm)),
@@ -492,7 +518,11 @@ export class IngestService {
           return;
         }
 
-        const externalId = campaignName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
+        // Crear ID único usando nombre + índice de fila
+        const externalId = this.buildExternalId(campaignName, rowIndex);
+
+        const spend = this.parseNumber(getCellValue(mapping.spend));
+        const impressions = this.parseNumber(getCellValue(mapping.impressions));
 
         let date: Date;
         if (platform === Platform.META_ADS) {
@@ -512,9 +542,9 @@ export class IngestService {
           externalId,
           name: campaignName,
           date,
-          impressions: this.parseNumber(getCellValue(mapping.impressions)),
+          impressions,
           clicks: this.parseNumber(getCellValue(mapping.clicks)),
-          spend: this.parseNumber(getCellValue(mapping.spend)),
+          spend,
           conversions,
           cpc: this.parseNumberOrNull(getCellValue(mapping.cpc)),
           cpm: this.parseNumberOrNull(getCellValue(mapping.cpm)),

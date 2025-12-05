@@ -287,13 +287,14 @@ async function parseGoogleAdsCSV(filePath: string): Promise<ParsedRow[]> {
       };
 
       const campaignName = getCellValue(mapping.campaignName)?.trim();
-      
+
       if (!campaignName || campaignName === '' || campaignName === '--' ||
           campaignName.toLowerCase().includes('total')) {
         continue;
       }
 
-      const externalId = campaignName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
+      // Usar nombre + índice de fila para garantizar unicidad
+      const externalId = `${campaignName}_row${i}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 200);
 
       rows.push({
         externalId,
@@ -349,7 +350,8 @@ async function parseCSVFile(filePath: string, platform: Platform): Promise<Parse
         continue;
       }
 
-      const externalId = campaignName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
+      // Usar nombre + índice de fila para garantizar unicidad
+      const externalId = `${campaignName}_row${i}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 200);
 
       let date: Date;
       if (platform === Platform.META_ADS && mapping.dateStart !== null) {
@@ -432,7 +434,8 @@ async function ingestFile(filePath: string, platform: Platform, tenantId: string
         const campaignName = getCellValue(mapping.campaignName)?.toString()?.trim();
         if (!campaignName || campaignName.toLowerCase().includes('total')) return;
 
-        const externalId = campaignName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 100);
+        // Usar nombre + índice de fila para garantizar unicidad
+        const externalId = `${campaignName}_row${rowIndex}`.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 200);
 
         let date = defaultDate;
         if (platform === Platform.META_ADS && mapping.dateStart) {
